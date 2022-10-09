@@ -1,71 +1,33 @@
-import React, { Component } from 'react';
-import { Button } from './button/button';
-import data from '../data/data.json';
-import { cleanedArray } from 'helpers/cleaningJson';
-import Gallery from './gallery/gallery';
-import { element } from 'prop-types';
-import Modal from './modal/modal';
+import { Button } from './Button/Button';
+import { useDispatch, useSelector } from 'react-redux';
+import { showUsers } from 'redux/user/userOperations';
+import { UsersList } from './UsersList/UsersList';
+import { selectUsers } from 'redux/user/userSelectors';
+import { useState } from 'react';
+import { AddUserForm } from './AddUserForm/AddUserForm';
 
-export class App extends Component {
-  state = {
-    isShown: false,
-    movies: cleanedArray(data),
-    currentImage: '',
+export const App = () => {
+  const dispatch = useDispatch();
+  const [openForm, setOpenForm] = useState(false)
+
+  const clickHandler = () => {
+    dispatch(showUsers());
   };
 
-  toogleIsShown = () => {
-    this.setState({ isShown: true });
-  };
 
-  deleteMovie = id => {
-    this.setState(prevState => ({
-      movies: prevState.movies.filter(element => element.id !== id),
-    }));
-  };
 
-  toogleWatched = id => {
-    this.setState(prevState => ({
-      movies: prevState.movies.map(element => {
-        if (element.id === id) {
-          return { ...element, watched: !element.watched };
-        }
-        return element;
-      }),
-    }));
-  };
+  const users = useSelector(selectUsers);
 
-  closeModal = () => {
-    this.setState({ currentImage: '' });
-  };
+  return (
+    <div>
+      <UsersList />
+      {users.length === 0 ? (
+        <Button text={'Show users list'} clickHandler={clickHandler} />
+      ) : (
+        <Button text={'Add'} clickHandler={() => setOpenForm(true)} />
+      )}
 
-  openModal = image => {
-    console.log(image);
-    this.setState({ currentImage: image });
-  };
-
-  render() {
-    const { isShown, movies, currentImage } = this.state;
-
-    return (
-      <div>
-        {isShown ? (
-          <Gallery
-            array={movies}
-            deleteMovie={this.deleteMovie}
-            toogleWatched={this.toogleWatched}
-            openModal={this.openModal}
-          />
-        ) : (
-          <Button
-            func={this.toogleIsShown}
-            text="Show film list"
-            type="button"
-          />
-        )}
-        {currentImage && (
-          <Modal image={currentImage} closeModal={this.closeModal} />
-        )}
-      </div>
-    );
-  }
-}
+      {openForm && <AddUserForm/>}
+    </div>
+  );
+};
